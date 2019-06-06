@@ -3,6 +3,7 @@ import numpy as np
 
 class Player():
     self.known_moves = set()
+
     #bit string
     self.position = b'0000000\
                       0000000\

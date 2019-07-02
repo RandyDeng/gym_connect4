@@ -81,7 +81,7 @@ class Connect4Env(gym.Env):
             # Game not done = 0 reward
             return False, 0
 
-    def check_d1(row, col, player_val):
+    def check_d1(self, row, col, player_val):
         start_r = row - min(row, col)
         start_c = col - min(row, col)
         count = 0
@@ -96,7 +96,7 @@ class Connect4Env(gym.Env):
             start_c = start_c + 1
         return False
 
-    def check_d2(row, col, player_val):
+    def check_d2(self, row, col, player_val):
         start_r = row + min(HEIGHT - row, col)
         start_c = col - min(HEIGHT - row, col)
         count = 0
@@ -111,7 +111,7 @@ class Connect4Env(gym.Env):
             start_c = start_c + 1
         return False
     
-    def check_horizontal(row, player_val):
+    def check_horizontal(self, row, player_val):
         count = 0
         r = self.board[row,:]
         for i in range(4):
@@ -119,7 +119,7 @@ class Connect4Env(gym.Env):
                 return True
         return False
 
-    def check_vertical(column, player_val):
+    def check_vertical(self, column, player_val):
         col = self.board[:,column]
         for i in range(3):
             if col[i] == col[i + 1] == col[i + 2] == col[i + 3] == player_val:

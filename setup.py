@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='gym_connect4',
-	version='0.0.1',
+    name='connect4_gym',
+	version='1.0.0',
 	install_requires=['gym']
 ) 

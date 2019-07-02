@@ -2,15 +2,12 @@ import gym
 import enum
 import numpy as np
 
-from gym import error, spaces, utils
-from gym.utils import seeding
-
 
 HEIGHT = 6
 WIDTH = 7
 
 
-class C4Env(gym.Env):
+class Connect4Env(gym.Env):
     metadata = {'render.modes': ['human', 'bot']}
 
     def __init__(self):

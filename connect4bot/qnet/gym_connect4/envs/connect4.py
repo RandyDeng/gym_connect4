@@ -67,6 +67,25 @@ class C4Env(gym.Env):
                     self.board[i+2][j] == Locations.P1.value and
                     self.board[i+3][j] == Locations.P1.value):
                         return True
+                    
+        # ascendingDiagonalCheck 
+        for i in range(3, HEIGHT):
+            for j in range(WIDTH - 3):
+                if (self.board[i][j] == player and
+                    self.board[i-1][j+1] == player and
+                    self.board[i-2][j+2] == player and
+                    self.board[i-3][j+3] == player):
+                        return True
+
+        # descendingDiagonalCheck
+        for i in range(3, HEIGHT):
+            for j in range(WIDTH):
+                if (self.board[i][j] == player and
+                    self.board[i-1][j-1] == player and
+                    self.board[i-2][j-2] == player and
+                    self.board[i-3][j-3] == player):
+                        return True
+        return False
 
     
     def perform_move(self, action, player_num):

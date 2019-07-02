@@ -17,6 +17,6 @@ env._step(0)
 env._step(0)
 env._step(0)
 env._step(0)
-print(env.check_win_condition())
+print(env.check_winner())
 
 env.close()

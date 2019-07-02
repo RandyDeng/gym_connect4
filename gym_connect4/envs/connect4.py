@@ -125,26 +125,12 @@ class Connect4Env(gym.Env):
             if col[i] == col[i + 1] == col[i + 2] == col[i + 3] == player_val:
                 return True
         return False
-
-        # ascendingDiagonalCheck
-        for i in range(3, HEIGHT):
-            for j in range(WIDTH - 3):
-                if (self.board[i][j] == player and
-                    self.board[i-1][j+1] == player and
-                    self.board[i-2][j+2] == player and
-                    self.board[i-3][j+3] == player):
-                        return True
-
-        # descendingDiagonalCheck
-        for i in range(3, HEIGHT):
-            for j in range(WIDTH):
-                if (self.board[i][j] == player and
-                    self.board[i-1][j-1] == player and
-                    self.board[i-2][j-2] == player and
-                    self.board[i-3][j-3] == player):
-                        return True
-        return False
-
+    
+    def update_legal_moves(self):
+        temp = self.board.reshape(6,7)
+        for i in self.action_space:
+            if not np.any(temp[:,i] == 0):
+                self.action_space.remove(i)
 
 class Player(enum.Enum):
     P1 = 1

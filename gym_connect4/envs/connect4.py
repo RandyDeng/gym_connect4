@@ -17,8 +17,8 @@ class Connect4Env(gym.Env):
 
     def _step(self, action):
         #### RANDOM CHOIE MOVE
-        last_played = self.perform_move(action, Player.P2.value)
-        self.update_legal_moves(last_played)
+        last_played = self.perform_move(opp_action, Player.P2.value)
+        self.update_legal_moves(opp_action)
         # TODO: get the random bot's column choice self.done, reward = check_win_condition(last_played
         ######### End of turn
         #self.done, tie = self.check_win_condition()
@@ -26,7 +26,7 @@ class Connect4Env(gym.Env):
          #   return self.state, reward, self.done, {'state': self.state}
         #AI MOVE
         last_played = self.perform_move(action, Player.P1.value)
-        self.update_legal_moves(last_played)
+        self.update_legal_moves(action)
         self.done, reward = check_win_condition(last_played, action, Player.P1.value)
         return self.state, 0, self.done, {'state': self.state}
 
@@ -86,7 +86,7 @@ class Connect4Env(gym.Env):
         start_c = col - min(row, col)
         count = 0
         while start_r < HEIGHT and start_c < WIDTH:
-            if board[start_r, start_c] == player_val:
+            if self.board[start_r, start_c] == player_val:
                 count = count + 1
                 if count == 4:
                     return True
@@ -101,7 +101,7 @@ class Connect4Env(gym.Env):
         start_c = col - min(HEIGHT - row, col)
         count = 0
         while start_r >= 0 and start_c < WIDTH:
-            if board[start_r, start_c] == player_val:
+            if self.board[start_r, start_c] == player_val:
                 count = count + 1
                 if count == 4:
                     return True
@@ -126,10 +126,9 @@ class Connect4Env(gym.Env):
                 return True
         return False
     
-    def update_legal_moves(self):
-        temp = self.board.reshape(6,7)
+    def update_legal_moves(self, col):
         for i in self.action_space:
-            if not np.any(temp[:,i] == 0):
+            if not np.any(self.board[:,col] == 0):
                 self.action_space.remove(i)
 
 class Player(enum.Enum):

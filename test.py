@@ -4,19 +4,32 @@ import numpy as np
 
 
 env = gym.make('gym_connect4:Connect4VsRandomBot-v0')
-env.reset()
 
+episodes = 10
+score = 0
 
-for x in range(30):
-    temp = np.random.randint(7)
-    print('move: {}'.format(temp))
-    print('move: {}'.format(type(temp)))
-    env.step(temp)
-    print(env.done)
+for episode in range(0, episodes):
+    state = env.reset()
+    done = False
+    while not done:
+        action = np.random.choice(env.action_space)
+        n_state, reward, done, info = env.step(action)
+        score = score + reward
     env.render()
-    if env.done:
-        print("Done!")
-        break
+    print('episode {} score {}'.format(episode, score))
+
+
+
+#for x in range(30):
+#    temp = np.random.choice(env.action_space)
+#    print('move: {}'.format(temp))
+#    print('move: {}'.format(type(temp)))
+#    env.step(temp)
+##    print(env.done)
+#    env.render()
+#    if env.done:
+#        print("Done!")
+#        break
 
 #env.render()
 #env.step(0)

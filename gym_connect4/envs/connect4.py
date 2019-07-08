@@ -16,10 +16,10 @@ class Connect4Env(gym.Env):
 
     def step(self, action):
         #### RANDOM CHOIE MOVE
-        print(self.action_space)
+        #print(self.action_space)
         if self.first_player:
-            breakpoint()
             opp_action = np.random.choice(self.action_space)
+            #print(opp_action)
             last_played = self.perform_move(opp_action, Player.P2.value)
             self.update_legal_moves(opp_action)
             self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
@@ -37,6 +37,7 @@ class Connect4Env(gym.Env):
             self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
             self.first_player = True
             return self.state, reward, self.done, {'state': self.state}
+        return 0, 0, 0, 0
 
     def seed(self, seed=None):
         return
@@ -121,7 +122,7 @@ class Connect4Env(gym.Env):
     def check_d2(self, row, col, player_val):
         start_r = row + min(HEIGHT - row - 1, col)
         start_c = col - min(HEIGHT - row - 1, col)
-        print('row {} col {}, sr {} sc {}'.format(row, col, start_r, start_c))
+        #print('row {} col {}, sr {} sc {}'.format(row, col, start_r, start_c))
         count = 0
         while start_r >= 0 and start_c < WIDTH:
             if self.board[start_r, start_c] == player_val:
@@ -150,11 +151,11 @@ class Connect4Env(gym.Env):
         return False
     
     def update_legal_moves(self, col):
-        for i in self.action_space[:]:
-            if not np.any(self.board[:,col] == 0):
-                print('removed col {}'.format(col))
-                self.action_space.remove(col)
-                break
+        #for i in self.action_space[:]:
+        if not np.any(self.board[:,col] == 0):
+            #print('removed col {}'.format(col))
+            self.action_space.remove(col)
+                #break
 
 class Player(enum.Enum):
     P1 = 1

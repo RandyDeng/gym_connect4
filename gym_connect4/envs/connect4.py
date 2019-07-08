@@ -11,36 +11,45 @@ class Connect4Env(gym.Env):
     metadata = {'render.modes': ['human', 'bot']}
 
     def __init__(self):
-        self._reset()
+        self.reset()
         self.player = Player.P1.value
-        #self.opponent = Player.P2
 
-    def _step(self, action):
+    def step(self, action):
         #### RANDOM CHOIE MOVE
-        last_played = self.perform_move(opp_action, Player.P2.value)
-        self.update_legal_moves(opp_action)
-        # TODO: get the random bot's column choice self.done, reward = check_win_condition(last_played
+        print(self.action_space)
+        if self.first_player:
+            breakpoint()
+            opp_action = np.random.choice(self.action_space)
+            last_played = self.perform_move(opp_action, Player.P2.value)
+            self.update_legal_moves(opp_action)
+            self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
+            self.first_player = False
+            if self.done:
+                return self.state, reward, self.done, {'state': self.state}
         ######### End of turn
         #self.done, tie = self.check_win_condition()
         #if self.done:
          #   return self.state, reward, self.done, {'state': self.state}
         #AI MOVE
-        last_played = self.perform_move(action, Player.P1.value)
-        self.update_legal_moves(action)
-        self.done, reward = check_win_condition(last_played, action, Player.P1.value)
-        return self.state, 0, self.done, {'state': self.state}
+        else:
+            last_played = self.perform_move(action, Player.P1.value)
+            self.update_legal_moves(action)
+            self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
+            self.first_player = True
+            return self.state, reward, self.done, {'state': self.state}
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         return
 
-    def _reset(self):
+    def reset(self):
         self.board = np.zeros(HEIGHT * WIDTH).reshape(HEIGHT, WIDTH)
         self.state = {'board': self.board}
         self.done = False
         self.current_player = Player.P1.value
-        self.action_space = spaces.Discrete(WIDTH)
+        self.action_space = [0, 1, 2, 3, 4, 5, 6]
+        self.first_player = np.random.choice([True,False])
 
-    def _render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         print(self.board)
         print("")
 
@@ -50,26 +59,39 @@ class Connect4Env(gym.Env):
         for i in range(len(chosen_col)):
             if int(chosen_col[6 - i - 1]) == 0:
                 chosen_col[6 - i - 1] = player_num
-                break
-
-    def choose_legal_move(self):
-        pass
+                return 6 - i - 1
 
     def check_win_condition(self, last_played, action, player_val):
         tie = False
         done = False
         filled = False
         count = 1
-        if Locations.Empty not in self.board:
+        if Player.Empty.value not in self.board:
             filled = True
-        if self.board[last_played - 1][action - 1] == player_val or self.board[last_played + 1][action + 1] == player_val:
-            done = self.check_d1(last_played, action, player_val)
-        if self.board[last_played - 1][action + 1] == player_val or self.board[last_played + 1][action - 1] == player_val:
-            done = done or self.check_d2(last_played, action, player_val)
-        if self.board[last_played][action - 1] == player_val or self.board[last_played][action + 1] == player_val:
-            done = done or self.check_horizontal(last_played, player_val)
-        if self.board[last_played + 1][action] == player_val:
-            done = done or self.check_vertical(action, player_val)
+        if (0 < last_played and 0 < action):
+            if self.board[last_played - 1][action - 1] == player_val:
+                done = self.check_d1(last_played, action, player_val)
+        elif last_played < HEIGHT - 1 and action <  WIDTH - 1:
+            if self.board[last_played + 1][action + 1] == player_val:
+                done = self.check_d1(last_played, action, player_val)
+
+        if (0 < last_played and action < WIDTH - 1):
+            if self.board[last_played - 1][action + 1] == player_val:
+                done = done or self.check_d2(last_played, action, player_val)
+        elif (last_played < HEIGHT - 1 and 0 < action):
+            if self.board[last_played + 1][action - 1] == player_val:
+                done = done or self.check_d2(last_played, action, player_val)
+
+        if (action < WIDTH - 1) or (0 < action):
+            if self.board[last_played][action - 1] == player_val:
+                done = done or self.check_horizontal(last_played, player_val)
+        elif 0 < action:
+            if self.board[last_played][action + 1] == player_val:
+                done = done or self.check_horizontal(last_played, player_val)
+
+        if (last_played < HEIGHT - 1):
+            if self.board[last_played + 1][action] == player_val:
+                done = done or self.check_vertical(action, player_val)
 
         if filled and not done:
             # TIE = 0 reward
@@ -97,8 +119,9 @@ class Connect4Env(gym.Env):
         return False
 
     def check_d2(self, row, col, player_val):
-        start_r = row + min(HEIGHT - row, col)
-        start_c = col - min(HEIGHT - row, col)
+        start_r = row + min(HEIGHT - row - 1, col)
+        start_c = col - min(HEIGHT - row - 1, col)
+        print('row {} col {}, sr {} sc {}'.format(row, col, start_r, start_c))
         count = 0
         while start_r >= 0 and start_c < WIDTH:
             if self.board[start_r, start_c] == player_val:
@@ -127,9 +150,11 @@ class Connect4Env(gym.Env):
         return False
     
     def update_legal_moves(self, col):
-        for i in self.action_space:
+        for i in self.action_space[:]:
             if not np.any(self.board[:,col] == 0):
-                self.action_space.remove(i)
+                print('removed col {}'.format(col))
+                self.action_space.remove(col)
+                break
 
 class Player(enum.Enum):
     P1 = 1

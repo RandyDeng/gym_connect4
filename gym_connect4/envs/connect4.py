@@ -15,33 +15,40 @@ class Connect4Env(gym.Env):
         self.player = Player.P1.value
 
     def step(self, action):
-        #### RANDOM CHOIE MOVE
+        #### AI MOVE
         #print(self.action_space)
+        reward = 0
         if self.first_player:
-            opp_action = np.random.choice(self.action_space)
-            #print(opp_action)
-            last_played = self.perform_move(opp_action, Player.P2.value)
-            self.update_legal_moves(opp_action)
-            self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
+            #print('1 {}'.format(self.action_space))
+            last_played = self.perform_move(action, Player.P1.value)
+            if last_played is not None:
+                self.update_legal_moves(action)
+                self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
+                if self.done:
+                    self.state = self.board
+                    return np.array(self.state), reward, self.done, {}
             self.first_player = False
-            if self.done:
-                self.state = self.board
-                return np.array(self.state), reward, self.done, {}
+
+
+
                 #return self.state, reward, self.done, {}
         ######### End of turn
         #self.done, tie = self.check_win_condition()
         #if self.done:
          #   return self.state, reward, self.done, {'state': self.state}
-        #AI MOVE
+        #RANDOM CHOICE MOVE
         else:
-            last_played = self.perform_move(action, Player.P1.value)
-            self.update_legal_moves(action)
-            self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
+            #print('2 {}'.format(self.action_space))
+            opp_action = np.random.choice(self.action_space)
+            #print(opp_action)
+            last_played = self.perform_move(opp_action, Player.P2.value)
+            self.update_legal_moves(opp_action)
+            self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
             self.first_player = True
             self.state = self.board
             return np.array(self.state), reward, self.done, {}
             #return self.state, reward, self.done, {}
-        return 0, 0, 0, {}
+        return np.array(self.state), reward, self.done, {}
 
     def seed(self, seed=None):
         return
@@ -77,6 +84,7 @@ class Connect4Env(gym.Env):
         count = 1
         if Player.Empty.value not in self.board:
             filled = True
+        #print("row {} col {} player {}".format(last_played, action, player_val))
         if (0 < last_played and 0 < action):
             if self.board[last_played - 1][action - 1] == player_val:
                 done = self.check_d1(last_played, action, player_val)
@@ -160,8 +168,9 @@ class Connect4Env(gym.Env):
     
     def update_legal_moves(self, col):
         #for i in self.action_space[:]:
-        if not np.any(self.board[:,col] == 0):
+        if not np.any(self.board[:,col] == 0) and col in self.action_space:
             #print('removed col {}'.format(col))
+            print('removing {}'.format(col))
             self.action_space.remove(col)
                 #break
 

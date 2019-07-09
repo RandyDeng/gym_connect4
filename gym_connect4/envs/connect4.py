@@ -25,7 +25,9 @@ class Connect4Env(gym.Env):
             self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
             self.first_player = False
             if self.done:
-                return self.state, reward, self.done, {'state': self.state}
+                self.state = self.board
+                return np.array(self.state), reward, self.done, {}
+                #return self.state, reward, self.done, {}
         ######### End of turn
         #self.done, tie = self.check_win_condition()
         #if self.done:
@@ -36,19 +38,25 @@ class Connect4Env(gym.Env):
             self.update_legal_moves(action)
             self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
             self.first_player = True
-            return self.state, reward, self.done, {'state': self.state}
-        return 0, 0, 0, 0
+            self.state = self.board
+            return np.array(self.state), reward, self.done, {}
+            #return self.state, reward, self.done, {}
+        return 0, 0, 0, {}
 
     def seed(self, seed=None):
         return
 
     def reset(self):
         self.board = np.zeros(HEIGHT * WIDTH).reshape(HEIGHT, WIDTH)
-        self.state = {'board': self.board}
+        self.observation_space = spaces.Box(-1, 1, shape=(6,7))
+        #self.observation_space = spaces.Box(-1, 1, dtype=np.float32)
+        #self.state = {'board': self.board}
+        self.state = self.board
         self.done = False
         self.current_player = Player.P1.value
         self.action_space = [0, 1, 2, 3, 4, 5, 6]
         self.first_player = np.random.choice([True,False])
+        return np.array(self.state)
 
     def render(self, mode='human', close=False):
         print(self.board)

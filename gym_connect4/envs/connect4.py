@@ -10,8 +10,9 @@ WIDTH = 7
 class Connect4Env(gym.Env):
     metadata = {'render.modes': ['human', 'bot']}
 
-    def __init__(self):
+    def __init__(self, opponent):
         self.reset()
+        self.opponent = opponent
         self.player = Player.P1.value
 
     def step(self, action):
@@ -19,15 +20,22 @@ class Connect4Env(gym.Env):
         #print(self.action_space)
         reward = 0
         if self.first_player:
-            #print('1 {}'.format(self.action_space))
-            last_played = self.perform_move(action, Player.P1.value)
-            if last_played is not None:
-                self.update_legal_moves(action)
-                self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
-                if self.done:
-                    self.state = self.board
-                    return np.array(self.state), reward, self.done, {}
+            if self.opponent == 'random':
+                opp_action = np.random.choice(self.action_space)
+            else:
+                opp_action = int(input('Give a column number 1-7: ')) -1
+            #print(opp_action)
+            last_played = self.perform_move(opp_action, Player.P2.value)
+            self.update_legal_moves(opp_action)
+            self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
             self.first_player = False
+            if self.done:
+                self.state = self.board
+                return np.array(self.state), reward, self.done, {}
+
+
+
+            #print('1 {}'.format(self.action_space))
 
 
 
@@ -38,15 +46,16 @@ class Connect4Env(gym.Env):
          #   return self.state, reward, self.done, {'state': self.state}
         #RANDOM CHOICE MOVE
         else:
-            #print('2 {}'.format(self.action_space))
-            opp_action = np.random.choice(self.action_space)
-            #print(opp_action)
-            last_played = self.perform_move(opp_action, Player.P2.value)
-            self.update_legal_moves(opp_action)
-            self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
+            last_played = self.perform_move(action, Player.P1.value)
+            if last_played is not None:
+                self.update_legal_moves(action)
+                self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
+                self.state = self.board
+            else:
+                reward = -100
             self.first_player = True
-            self.state = self.board
             return np.array(self.state), reward, self.done, {}
+            #print('2 {}'.format(self.action_space))
             #return self.state, reward, self.done, {}
         return np.array(self.state), reward, self.done, {}
 
@@ -83,31 +92,39 @@ class Connect4Env(gym.Env):
         filled = False
         count = 1
         if Player.Empty.value not in self.board:
+         #   print('filled')
             filled = True
         #print("row {} col {} player {}".format(last_played, action, player_val))
         if (0 < last_played and 0 < action):
             if self.board[last_played - 1][action - 1] == player_val:
+                #print('checking d1.1')
                 done = self.check_d1(last_played, action, player_val)
         elif last_played < HEIGHT - 1 and action <  WIDTH - 1:
             if self.board[last_played + 1][action + 1] == player_val:
+                #print('checking d1.2')
                 done = self.check_d1(last_played, action, player_val)
 
         if (0 < last_played and action < WIDTH - 1):
             if self.board[last_played - 1][action + 1] == player_val:
+                #print('checking d2.1')
                 done = done or self.check_d2(last_played, action, player_val)
         elif (last_played < HEIGHT - 1 and 0 < action):
             if self.board[last_played + 1][action - 1] == player_val:
+                #print('checking d2.2')
                 done = done or self.check_d2(last_played, action, player_val)
 
-        if (action < WIDTH - 1) or (0 < action):
+        if 0 < action:
             if self.board[last_played][action - 1] == player_val:
+          #      print('checking h.1')
                 done = done or self.check_horizontal(last_played, player_val)
-        elif 0 < action:
+        elif (action < WIDTH - 1) or (0 < action):
             if self.board[last_played][action + 1] == player_val:
+           #     print('checking h.2')
                 done = done or self.check_horizontal(last_played, player_val)
 
         if (last_played < HEIGHT - 1):
             if self.board[last_played + 1][action] == player_val:
+            #    print('checking v.2')
                 done = done or self.check_vertical(action, player_val)
 
         if filled and not done:
@@ -115,7 +132,7 @@ class Connect4Env(gym.Env):
             return True, 0
         if done:
             # Game won by player = 1 reward; won by opponent = -1
-            return True, (1 * player_val)
+            return True, (5 * player_val)
         else:
             # Game not done = 0 reward
             return False, 0
@@ -170,7 +187,7 @@ class Connect4Env(gym.Env):
         #for i in self.action_space[:]:
         if not np.any(self.board[:,col] == 0) and col in self.action_space:
             #print('removed col {}'.format(col))
-            print('removing {}'.format(col))
+            #print('removing {}'.format(col))
             self.action_space.remove(col)
                 #break
 

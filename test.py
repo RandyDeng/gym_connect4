@@ -7,7 +7,7 @@ from keras.layers import Dense, Activation, Flatten
 from keras.optimizers import Adam
 
 from rl.agents.dqn import DQNAgent
-from rl.policy import BoltzmannQPolicy
+from rl.policy import BoltzmannQPolicy, MaxBoltzmannQPolicy, EpsGreedyQPolicy
 from rl.memory import SequentialMemory
 
 
@@ -50,31 +50,35 @@ from rl.memory import SequentialMemory
 
 ########################################### KERAS STUFF AFTER HERE #############
 env_name = 'gym_connect4:Connect4VsRandomBot-v0'
+#env_name = 'gym_connect4:Connect4VsHuman-v0'
 env = gym.make(env_name)
 
 model = Sequential()
 model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
 #model.add(Flatten(input_shape=(1,1)))
-#model.add(Dense(16))
-#model.add(Activation('relu'))
-#model.add(Dense(16))
-#model.add(Activation('relu'))
-#model.add(Dense(16))
-#model.add(Activation('relu'))
+model.add(Dense(16))
+model.add(Activation('relu'))
+model.add(Dense(16))
+model.add(Activation('relu'))
+model.add(Dense(16))
+model.add(Activation('relu'))
 model.add(Dense(7))
 model.add(Activation('linear'))
 print(model.summary())
 
-memory = SequentialMemory(limit=50000, window_length=1)
-policy = BoltzmannQPolicy()
+memory = SequentialMemory(limit=500000, window_length=1)
+policy = MaxBoltzmannQPolicy()
 dqn = DQNAgent(model=model, nb_actions=7, memory=memory, nb_steps_warmup=10, target_model_update=1e-2, policy=policy)
+
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
-dqn.fit(env, nb_steps=50000, visualize=True, verbose=2)
+dqn.fit(env, nb_steps=500000, visualize=False, verbose=2)
 
-dqn.save_weights('dqn_{}_weights.h5f'.format(env_name), overwrite=True)
+dqn.save_weights('dqn_MaxBoltzmann_weights.h5f'.format(env_name), overwrite=True)
 
-dqn.test(env, nb_episodes=5, visualize=True)
+#dqn.load_weights('dqn_MaxBoltzmann_weights.h5f'.format(env_name))
+
+dqn.test(env, nb_episodes=100, visualize=False)
 
 env.close()
 

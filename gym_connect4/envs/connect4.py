@@ -11,17 +11,37 @@ class Connect4Env(gym.Env):
     metadata = {'render.modes': ['human', 'bot']}
 
     def __init__(self, opponent):
+        self.count = 0
         self.reset()
         self.opponent = opponent
         self.player = Player.P1.value
+        self.last_ai_move = 0
+        self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 
     def step(self, action):
         #### AI MOVE
         #print(self.action_space)
         reward = 0
+        self.count = self.count + 1
+        self.last_ai_move
         if self.first_player:
             if self.opponent == 'random':
-                opp_action = np.random.choice(self.action_spaces)
+                if self.count % 100000 == 0 and self.count <= 500000:
+                    self.probs = self.remake_probs()
+                elif 600000 < self.count <= 800000:
+                    while self.probs.index(True) in self.illegal:
+                        self.probs = [0, 0, 0, 0, 0, 0, 0]
+                        idx = np.random.choice(self.action_spaces)
+                        self.probs[idx] = 1
+                elif 800000 < self.count <= 1000000:
+                    if self.last_played in self.illegal:
+                        opp_action = np.random.choice(self.action_spaces)
+                    else:
+                        self.probs = [0, 0, 0, 0, 0, 0, 0]
+                        self.probs[self.last_played] = 1
+                opp_action = -1
+                while opp_action in self.illegal:
+                    opp_action = np.random.choice(self.action_spaces, p=self.probs)
             else:
                 opp_action = int(input('Give a column number 1-7: ')) -1
             #print(opp_action)
@@ -47,6 +67,7 @@ class Connect4Env(gym.Env):
         #RANDOM CHOICE MOVE
         else:
             last_played = self.perform_move(action, Player.P1.value)
+            self.last_played = last_played
             if last_played is not None:
                 self.update_legal_moves(action)
                 self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
@@ -74,11 +95,19 @@ class Connect4Env(gym.Env):
         self.action_space = spaces.Discrete(7)
         self.action_spaces = [0, 1, 2, 3, 4, 5, 6]
         self.first_player = np.random.choice([True,False])
+        self.illegal = [-1]
+        if 600000 < self.count < 800000:
+            idx = np.random.choice(self.action_spaces)
+            self.probs = [0, 0, 0, 0, 0, 0, 0]
+            self.probs[idx] = 1
         return np.array(self.state)
 
     def render(self, mode='human', close=False):
         print(self.board)
         print("")
+
+    def remake_probs(self):
+        return np.random.dirichlet(np.ones(7))
 
     def perform_move(self, action, player_num):
         """ Assumes that the move is legal """
@@ -187,10 +216,11 @@ class Connect4Env(gym.Env):
     
     def update_legal_moves(self, col):
         #for i in self.action_space[:]:
-        if not np.any(self.board[:,col] == 0) and col in self.action_spaces:
+        if not np.any(self.board[:,col] == 0) and col not in self.illegal:
             #print('removed col {}'.format(col))
             #print('removing {}'.format(col))
-            self.action_spaces.remove(col)
+            #self.action_spacescol)
+            self.illegal.append(col)
                 #break
 
 class Player(enum.Enum):

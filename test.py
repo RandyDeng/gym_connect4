@@ -2,6 +2,7 @@ import gym
 import gym_connect4
 import numpy as np
 
+import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten, Conv2D, MaxPooling2D
 from keras.optimizers import Adam
@@ -49,28 +50,40 @@ from rl.memory import SequentialMemory
 
 
 ########################################### KERAS STUFF AFTER HERE #############
-#env_name = 'gym_connect4:Connect4VsRandomBot-v0'
-env_name = 'gym_connect4:Connect4VsHuman-v0'
+class Metrics(keras.callbacks.Callback):
+    def __init__(self, agent):
+        keras.callbacks.Callback.__init__
+        self.agent=agent
+
+    def on_train_begin(self, logs={}):
+        self.metrics = {key: [] for key in self.agent.metrics_names}
+
+    def on_step_end(self, episode_step, logs):
+        for ordinal, key in enumerate(self.agent.metrics_names, 0):
+            self.metrics[key].append(logs.get('metrics')[ordinal])
+
+env_name = 'gym_connect4:Connect4VsRandomBot-v0'
+#env_name = 'gym_connect4:Connect4VsHuman-v0'
 env = gym.make(env_name)
 
 model = Sequential()
 #model.add(Flatten(input_shape=(1,1)))
-model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-#model.add(Conv2D(16, (3,3), input_shape=(1, 6, 7), activation='relu', data_format='channels_first'))
-#model.add(MaxPooling2D((2,2)))
+#model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
+model.add(Conv2D(16, (3,3), input_shape=(1, 6, 7), activation='relu', data_format='channels_first'))
+model.add(MaxPooling2D((2,2)))
 #model.add(Conv2D(16, (3, 3), activation='relu'))
 #model.add(Conv2D(16, (3, 3), activation='relu'))
 #model.add(Conv2D(16, (3, 3), activation='relu'))
-#model.add(Flatten())
-model.add(Dense(16))
+model.add(Flatten())
+model.add(Dense(32))
 model.add(Activation('relu'))
-model.add(Dense(16))
+model.add(Dense(32))
 model.add(Activation('relu'))
-model.add(Dense(16))
+model.add(Dense(32))
 model.add(Activation('relu'))
-model.add(Dense(16))
+model.add(Dense(32))
 model.add(Activation('relu'))
-model.add(Dense(16))
+model.add(Dense(32))
 model.add(Activation('relu'))
 model.add(Dense(7))
 model.add(Activation('linear'))
@@ -82,13 +95,15 @@ dqn = DQNAgent(model=model, nb_actions=7, memory=memory, nb_steps_warmup=10, tar
 
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
-#dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2)
+metrics = Metrics(dqn)
 
-#dqn.save_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name), overwrite=True)
+dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
 
-dqn.load_weights('dqn_EpsGreedy_weights16.h5f'.format(env_name))
+dqn.save_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name), overwrite=True)
 
-dqn.test(env, nb_episodes=100, visualize=True)
+#dqn.load_weights('dqn_EpsGreedy_weights16.h5f'.format(env_name))
+
+dqn.test(env, nb_episodes=1, visualize=True)
 
 env.close()
 

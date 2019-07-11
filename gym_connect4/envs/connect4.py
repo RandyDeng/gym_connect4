@@ -23,9 +23,9 @@ class Connect4Env(gym.Env):
         #print(self.action_space)
         reward = 0
         self.count = self.count + 1
-        self.last_ai_move
         if self.first_player:
             if self.opponent == 'random':
+                opp_action = -1
                 if self.count % 100000 == 0 and self.count <= 500000:
                     self.probs = self.remake_probs()
                 elif 600000 < self.count <= 800000:
@@ -34,12 +34,14 @@ class Connect4Env(gym.Env):
                         idx = np.random.choice(self.action_spaces)
                         self.probs[idx] = 1
                 elif 800000 < self.count <= 1000000:
-                    if self.last_played in self.illegal:
-                        opp_action = np.random.choice(self.action_spaces)
+                    if self.last_ai_move in self.illegal:
+                        while opp_action in self.illegal:
+                            opp_action = np.random.choice(self.action_spaces)
                     else:
                         self.probs = [0, 0, 0, 0, 0, 0, 0]
-                        self.probs[self.last_played] = 1
-                opp_action = -1
+                        self.probs[self.last_ai_move] = 1
+                else:
+                    self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
                 while opp_action in self.illegal:
                     opp_action = np.random.choice(self.action_spaces, p=self.probs)
             else:
@@ -67,7 +69,7 @@ class Connect4Env(gym.Env):
         #RANDOM CHOICE MOVE
         else:
             last_played = self.perform_move(action, Player.P1.value)
-            self.last_played = last_played
+            self.last_ai_move = action
             if last_played is not None:
                 self.update_legal_moves(action)
                 self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
@@ -95,7 +97,7 @@ class Connect4Env(gym.Env):
         self.action_space = spaces.Discrete(7)
         self.action_spaces = [0, 1, 2, 3, 4, 5, 6]
         self.first_player = np.random.choice([True,False])
-        self.illegal = [-1]
+        self.illegal = [None, -1]
         if 600000 < self.count < 800000:
             idx = np.random.choice(self.action_spaces)
             self.probs = [0, 0, 0, 0, 0, 0, 0]

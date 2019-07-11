@@ -21,7 +21,7 @@ class Connect4Env(gym.Env):
         reward = 0
         if self.first_player:
             if self.opponent == 'random':
-                opp_action = np.random.choice(self.action_space)
+                opp_action = np.random.choice(self.action_spaces)
             else:
                 opp_action = int(input('Give a column number 1-7: ')) -1
             #print(opp_action)
@@ -51,6 +51,7 @@ class Connect4Env(gym.Env):
                 self.update_legal_moves(action)
                 self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
                 self.state = self.board
+                reward = reward + 1
             else:
                 reward = -100
             self.first_player = True
@@ -70,7 +71,8 @@ class Connect4Env(gym.Env):
         self.state = self.board
         self.done = False
         self.current_player = Player.P1.value
-        self.action_space = [0, 1, 2, 3, 4, 5, 6]
+        self.action_space = spaces.Discrete(7)
+        self.action_spaces = [0, 1, 2, 3, 4, 5, 6]
         self.first_player = np.random.choice([True,False])
         return np.array(self.state)
 
@@ -132,7 +134,7 @@ class Connect4Env(gym.Env):
             return True, 0
         if done:
             # Game won by player = 1 reward; won by opponent = -1
-            return True, (5 * player_val)
+            return True, (75 * player_val)
         else:
             # Game not done = 0 reward
             return False, 0
@@ -185,10 +187,10 @@ class Connect4Env(gym.Env):
     
     def update_legal_moves(self, col):
         #for i in self.action_space[:]:
-        if not np.any(self.board[:,col] == 0) and col in self.action_space:
+        if not np.any(self.board[:,col] == 0) and col in self.action_spaces:
             #print('removed col {}'.format(col))
             #print('removing {}'.format(col))
-            self.action_space.remove(col)
+            self.action_spaces.remove(col)
                 #break
 
 class Player(enum.Enum):

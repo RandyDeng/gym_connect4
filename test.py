@@ -90,20 +90,20 @@ model.add(Activation('linear'))
 print(model.summary())
 
 memory = SequentialMemory(limit=1000000, window_length=1)
-policy = EpsGreedyQPolicy()
+policy = MaxBoltzmannQPolicy()
 dqn = DQNAgent(model=model, nb_actions=7, memory=memory, nb_steps_warmup=10, target_model_update=1e-2, policy=policy)
 
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
 metrics = Metrics(dqn)
 
+dqn.load_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name))
+
 dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
 
-dqn.save_weights('dqn_EpsGreedy_weights32.h5f'.format(env_name), overwrite=True)
+dqn.save_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name), overwrite=True)
 
-#dqn.load_weights('dqn_EpsGreedy_weights16.h5f'.format(env_name))
-
-dqn.test(env, nb_episodes=100, visualize=True)
+dqn.test(env, nb_episodes=100, visualize=False)
 
 env.close()
 

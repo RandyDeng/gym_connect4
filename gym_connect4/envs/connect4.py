@@ -18,36 +18,65 @@ class Connect4Env(gym.Env):
         self.last_ai_move = 0
         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 
+
+    def check_would_win(self, player_num):
+        for move in self.action_spaces:
+            if move not in self.illegal:
+                row = self.get_row_number(move)
+                if row < 3:
+                    if self.check_vertical(move, player_num, would_win=True, row=row):
+                        return True, move
+                if self.check_horizontal(row, player_num, would_win=True, col=move):
+                    return True, move
+                if self.check_d1(row, move, player_num, would_win=True):
+                    return True, move
+                if self.check_d2(row, move, player_num, would_win=True):
+                    return True, move
+                        #check if index would win
+                        #set opp_action if so
+        return False, -1
+
     def step(self, action):
-        #### AI MOVE
+        #### RANDOM CHOICE MOVE
         #print(self.action_space)
         reward = 0
         self.count = self.count + 1
         if self.first_player:
             if self.opponent == 'random':
-                opp_action = -1
-                if self.count % 100000 == 0 and self.count <= 500000:
-                    self.probs = self.remake_probs()
-                elif 600000 < self.count <= 800000:
-                    if 1 not in self.probs:
-                        self.probs = [0, 0, 0, 0, 0, 0, 0]
-                        idx = np.random.choice(self.action_spaces)
-                        self.probs[idx] = 1
-                    while self.probs.index(True) in self.illegal:
-                        self.probs = [0, 0, 0, 0, 0, 0, 0]
-                        idx = np.random.choice(self.action_spaces)
-                        self.probs[idx] = 1
-                elif 800000 < self.count <= 1000000:
-                    if self.last_ai_move in self.illegal:
-                        while opp_action in self.illegal:
-                            opp_action = np.random.choice(self.action_spaces)
-                    else:
-                        self.probs = [0, 0, 0, 0, 0, 0, 0]
-                        self.probs[self.last_ai_move] = 1
+                skip, opp_action = self.check_would_win(Player.P2.value)
+                if skip:
+                    #print('SKIP')
+                    self.perform_move(opp_action, -1)
+                    return np.array(self.state), -75, True, {}
                 else:
-                    self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
-                while opp_action in self.illegal:
-                    opp_action = np.random.choice(self.action_spaces, p=self.probs)
+                    skip, opp_action = self.check_would_win(Player.P1.value)
+                if skip:
+                    #print('SKIP')
+                    pass
+                else:
+                    opp_action = -1
+                    if self.count % 100000 == 0 and self.count <= 500000:
+                        self.probs = self.remake_probs()
+                    elif 600000 < self.count <= 800000:
+                        if 1 not in self.probs:
+                            self.probs = [0, 0, 0, 0, 0, 0, 0]
+                            idx = np.random.choice(self.action_spaces)
+                            self.probs[idx] = 1
+                        while self.probs.index(True) in self.illegal:
+                            self.probs = [0, 0, 0, 0, 0, 0, 0]
+                            idx = np.random.choice(self.action_spaces)
+                            self.probs[idx] = 1
+                    elif 800000 < self.count <= 1000000:
+                        if self.last_ai_move in self.illegal:
+                            while opp_action in self.illegal:
+                                opp_action = np.random.choice(self.action_spaces)
+                        else:
+                            self.probs = [0, 0, 0, 0, 0, 0, 0]
+                            self.probs[self.last_ai_move] = 1
+                    else:
+                        self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
+                    while opp_action in self.illegal:
+                        opp_action = np.random.choice(self.action_spaces, p=self.probs)
             else:
                 opp_action = int(input('Give a column number 1-7: ')) -1
             #print(opp_action)
@@ -59,22 +88,15 @@ class Connect4Env(gym.Env):
                 self.state = self.board
                 return np.array(self.state), reward, self.done, {}
 
-
-
-            #print('1 {}'.format(self.action_space))
-
-
-
-                #return self.state, reward, self.done, {}
         ######### End of turn
         #self.done, tie = self.check_win_condition()
         #if self.done:
          #   return self.state, reward, self.done, {'state': self.state}
-        #RANDOM CHOICE MOVE
+        #AI MOVE
         else:
-            last_played = self.perform_move(action, Player.P1.value)
-            self.last_ai_move = action
-            if last_played is not None:
+            if action not in self.illegal:
+                last_played = self.perform_move(action, Player.P1.value)
+                self.last_ai_move = action
                 self.update_legal_moves(action)
                 self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
                 self.state = self.board
@@ -115,13 +137,18 @@ class Connect4Env(gym.Env):
     def remake_probs(self):
         return np.random.dirichlet(np.ones(7))
 
-    def perform_move(self, action, player_num):
-        """ Assumes that the move is legal """
+    def get_row_number(self, action):
         chosen_col = self.board[:, action]
         for i in range(len(chosen_col)):
             if int(chosen_col[6 - i - 1]) == 0:
-                chosen_col[6 - i - 1] = player_num
                 return 6 - i - 1
+
+    def perform_move(self, action, player_num):
+        """ Assumes that the move is legal """
+        location = self.get_row_number(action)
+        chosen_col = self.board[:, action]
+        chosen_col[location] = player_num
+        return location
 
     def check_win_condition(self, last_played, action, player_val):
         tie = False
@@ -174,12 +201,12 @@ class Connect4Env(gym.Env):
             # Game not done = 0 reward
             return False, 0
 
-    def check_d1(self, row, col, player_val):
+    def check_d1(self, row, col, player_val, would_win = False):
         start_r = row - min(row, col)
         start_c = col - min(row, col)
         count = 0
         while start_r < HEIGHT and start_c < WIDTH:
-            if self.board[start_r, start_c] == player_val:
+            if self.board[start_r, start_c] == player_val or (would_win and row == start_r and col == start_c):
                 count = count + 1
                 if count == 4:
                     return True
@@ -189,13 +216,13 @@ class Connect4Env(gym.Env):
             start_c = start_c + 1
         return False
 
-    def check_d2(self, row, col, player_val):
+    def check_d2(self, row, col, player_val, would_win = False):
         start_r = row + min(HEIGHT - row - 1, col)
         start_c = col - min(HEIGHT - row - 1, col)
         #print('row {} col {}, sr {} sc {}'.format(row, col, start_r, start_c))
         count = 0
         while start_r >= 0 and start_c < WIDTH:
-            if self.board[start_r, start_c] == player_val:
+            if self.board[start_r, start_c] == player_val or (would_win and row == start_r and col == start_c):
                 count = count + 1
                 if count == 4:
                     return True
@@ -205,16 +232,21 @@ class Connect4Env(gym.Env):
             start_c = start_c + 1
         return False
     
-    def check_horizontal(self, row, player_val):
-        count = 0
+    def check_horizontal(self, row, player_val, would_win = False, col = 0):
         r = self.board[row,:]
         for i in range(4):
+            if would_win:
+                return (((r[i] == player_val) + (r[i + 1] == player_val) +
+                    (r[i + 2] == player_val) +  (r[i + 3] == player_val)) == 3) and\
+                    ((i == col) or (i + 1 == col) or (i + 2 == col) or (i + 3 == col))
             if r[i] == r[i + 1] == r[i + 2] == r[i + 3] == player_val:
                 return True
         return False
 
-    def check_vertical(self, column, player_val):
+    def check_vertical(self, column, player_val, would_win = False, row = 0):
         col = self.board[:,column]
+        if would_win:
+            return col[row + 1] == col[row + 2] == col[row + 3] == player_val
         for i in range(3):
             if col[i] == col[i + 1] == col[i + 2] == col[i + 3] == player_val:
                 return True

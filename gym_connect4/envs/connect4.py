@@ -29,6 +29,10 @@ class Connect4Env(gym.Env):
                 if self.count % 100000 == 0 and self.count <= 500000:
                     self.probs = self.remake_probs()
                 elif 600000 < self.count <= 800000:
+                    if 1 not in self.probs:
+                        self.probs = [0, 0, 0, 0, 0, 0, 0]
+                        idx = np.random.choice(self.action_spaces)
+                        self.probs[idx] = 1
                     while self.probs.index(True) in self.illegal:
                         self.probs = [0, 0, 0, 0, 0, 0, 0]
                         idx = np.random.choice(self.action_spaces)
@@ -98,7 +102,7 @@ class Connect4Env(gym.Env):
         self.action_spaces = [0, 1, 2, 3, 4, 5, 6]
         self.first_player = np.random.choice([True,False])
         self.illegal = [None, -1]
-        if 600000 < self.count < 800000:
+        if 600000 < self.count <= 800000:
             idx = np.random.choice(self.action_spaces)
             self.probs = [0, 0, 0, 0, 0, 0, 0]
             self.probs[idx] = 1

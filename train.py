@@ -1,6 +1,7 @@
 import gym
 import gym_connect4
 import numpy as np
+import pickle
 
 from keras.callbacks import Callback
 from keras.models import Sequential
@@ -50,6 +51,7 @@ def main():
     # Setup Environment
     # Available environments:
     # 'gym_connect4:Connect4VsRandomBot-v0'
+    # 'gym_connect4:Connect4VsSelf-v0'
     # 'gym_connect4:Connect4VsHuman-v0'
     env_name = 'gym_connect4:Connect4VsRandomBot-v0'
     env = gym.make(env_name)
@@ -66,13 +68,17 @@ def main():
                    policy=policy)
     metrics = Metrics(dqn)
 
+    # Train the Neural Network
+    filename = 'dqn_MaxBoltzmann{}'
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
-    # dqn.load_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name))
-    dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
-    dqn.save_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name), overwrite=True)
+    # dqn.load_weights(filename.format('.weights32'))
+    dqn.fit(env, nb_steps=2000000, visualize=False, verbose=2, callbacks=[metrics])
+    dqn.save_weights(filename.format('.weights32'), overwrite=True)
     dqn.test(env, nb_episodes=100, visualize=False)
     env.close()
-
+    
+    # Save metrics to file
+    pickle.dump(metrics.metrics, open(filename.format('.metrics'), 'wb'))
 
 if __name__ == "__main__":
     main()

@@ -88,6 +88,8 @@ class Connect4Env(gym.Env):
                         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
                     while opp_action in self.illegal:
                         opp_action = np.random.choice(self.action_spaces, p=self.probs)
+            elif self.opponent == 'self':
+                raise NotImplementedError('Self is not implemented yet')
             elif self.opponent == 'human':
                 opp_action = int(input('Give a column number 1-7: ')) -1
             else:
@@ -103,7 +105,7 @@ class Connect4Env(gym.Env):
         # AI Bot Turn
         else:
             if action not in self.illegal:
-                # If move is not illegal, do it
+                # If move is legal, do it
                 last_played = self.perform_move(action, Player.P1.value)
                 self.last_ai_move = action
                 self.update_legal_moves(action)

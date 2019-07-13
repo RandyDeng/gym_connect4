@@ -2,6 +2,7 @@ import gym
 import gym_connect4
 import numpy as np
 
+import datetime
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten, Conv2D, MaxPooling2D
@@ -62,8 +63,8 @@ class Metrics(keras.callbacks.Callback):
         for ordinal, key in enumerate(self.agent.metrics_names, 0):
             self.metrics[key].append(logs.get('metrics')[ordinal])
 
-env_name = 'gym_connect4:Connect4VsRandomBot-v0'
-#env_name = 'gym_connect4:Connect4VsHuman-v0'
+#env_name = 'gym_connect4:Connect4VsRandomBot-v0'
+env_name = 'gym_connect4:Connect4VsHuman-v0'
 env = gym.make(env_name)
 
 model = Sequential()
@@ -90,20 +91,21 @@ model.add(Activation('linear'))
 print(model.summary())
 
 memory = SequentialMemory(limit=1000000, window_length=1)
-policy = MaxBoltzmannQPolicy()
+policy = EpsGreedyQPolicy()
+policy_str = 'EpsGreedy'
 dqn = DQNAgent(model=model, nb_actions=7, memory=memory, nb_steps_warmup=10, target_model_update=1e-2, policy=policy)
 
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
 metrics = Metrics(dqn)
 
-dqn.load_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name))
+dqn.load_weights('EpsSatMorning.h5f')
 
-dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
+#dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
 
-dqn.save_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name), overwrite=True)
+#dqn.save_weights('dqn_{}_{}.h5f'.format(policy_str, str(datetime.datetime.now())), overwrite=True)
 
-dqn.test(env, nb_episodes=100, visualize=False)
+dqn.test(env, nb_episodes=100, visualize=True)
 
 env.close()
 

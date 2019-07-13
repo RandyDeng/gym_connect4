@@ -69,7 +69,7 @@ def main():
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
     # dqn.load_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name))
     dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
-    dqn.save_weights('dqn_MaxBoltzmann_weights32__.h5f'.format(env_name), overwrite=True)
+    dqn.save_weights('dqn_MaxBoltzmann_weights32.h5f'.format(env_name), overwrite=True)
     dqn.test(env, nb_episodes=100, visualize=False)
     env.close()
 

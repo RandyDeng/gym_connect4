@@ -215,11 +215,8 @@ class Connect4Env(gym.Env):
     
     def check_horizontal(self, row, player_val, would_win = False, col = 0):
         r = self.board[row,:]
-        #print(r)
         count = 0
         for i in range(7):
-            #print(i)
-            #print(r[i])
             if r[i] == player_val or (would_win and i == col):
                 count = count + 1
                 if count == 4:
@@ -227,13 +224,6 @@ class Connect4Env(gym.Env):
             else:
                 count = 0
         return False
-            #if would_win:
-                #return (((r[i] == player_val) + (r[i + 1] == player_val) +
-                    #(r[i + 2] == player_val) +  (r[i + 3] == player_val)) == 3) and\
-                    #((i == col) or (i + 1 == col) or (i + 2 == col) or (i + 3 == col))
-            #if r[i] == r[i + 1] == r[i + 2] == r[i + 3] == player_val:
-                #return True
-        #return False
 
     def check_vertical(self, column, player_val, would_win = False, row = 0):
         col = self.board[:,column]

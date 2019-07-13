@@ -7,9 +7,23 @@ from gym import spaces
 HEIGHT = 6
 WIDTH = 7
 
-class Connect4Env(gym.Env):
-    metadata = {'render.modes': ['human', 'bot']}
+class Player(enum.Enum):
+    P1 = 1
+    P2 = -1
+    Empty = 0
 
+
+class Actions(enum.Enum):
+    Col1 = 0
+    Col2 = 1
+    Col3 = 2
+    Col4 = 3
+    Col5 = 4
+    Col6 = 5
+    Col7 = 6
+
+
+class Connect4Env(gym.Env):
     def __init__(self, opponent):
         self.count = 0
         self.reset()
@@ -17,7 +31,6 @@ class Connect4Env(gym.Env):
         self.player = Player.P1.value
         self.last_ai_move = 0
         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
-
 
     def check_would_win(self, player_num):
         for move in self.action_spaces:
@@ -32,26 +45,24 @@ class Connect4Env(gym.Env):
                     return True, move
                 if self.check_d2(row, move, player_num, would_win=True):
                     return True, move
-                        #check if index would win
-                        #set opp_action if so
         return False, -1
 
     def step(self, action):
-        #### RANDOM CHOICE MOVE
-        #print(self.action_space)
+        # Rewards: -1 for losing, 0 for tie, 1 for winning
         reward = 0
+        # Keep track of moves for updating the opponent action policy
         self.count = self.count + 1
+        
+        # Opponent move. Can be random, bot, or manual (human controlled)
         if self.first_player:
             if self.opponent == 'random':
                 skip, opp_action = self.check_would_win(Player.P2.value)
                 if skip:
-                    #print('SKIP')
                     self.perform_move(opp_action, -1)
                     return np.array(self.state), -75, True, {}
                 else:
                     skip, opp_action = self.check_would_win(Player.P1.value)
                 if skip:
-                    #print('SKIP')
                     pass
                 else:
                     opp_action = -1
@@ -77,24 +88,22 @@ class Connect4Env(gym.Env):
                         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
                     while opp_action in self.illegal:
                         opp_action = np.random.choice(self.action_spaces, p=self.probs)
-            else:
+            elif self.opponent == 'human':
                 opp_action = int(input('Give a column number 1-7: ')) -1
-            #print(opp_action)
+            else:
+                raise ValueError('Opponent must be properly specified')
+
             last_played = self.perform_move(opp_action, Player.P2.value)
             self.update_legal_moves(opp_action)
             self.done, reward = self.check_win_condition(last_played, opp_action, Player.P2.value)
             self.first_player = False
             if self.done:
                 self.state = self.board
-                return np.array(self.state), reward, self.done, {}
 
-        ######### End of turn
-        #self.done, tie = self.check_win_condition()
-        #if self.done:
-         #   return self.state, reward, self.done, {'state': self.state}
-        #AI MOVE
+        # AI Bot Turn
         else:
             if action not in self.illegal:
+                # If move is not illegal, do it
                 last_played = self.perform_move(action, Player.P1.value)
                 self.last_ai_move = action
                 self.update_legal_moves(action)
@@ -102,11 +111,9 @@ class Connect4Env(gym.Env):
                 self.state = self.board
                 reward = reward + 1
             else:
+                # Punish illegal moves heavily
                 reward = -100
             self.first_player = True
-            return np.array(self.state), reward, self.done, {}
-            #print('2 {}'.format(self.action_space))
-            #return self.state, reward, self.done, {}
         return np.array(self.state), reward, self.done, {}
 
     def seed(self, seed=None):
@@ -115,8 +122,6 @@ class Connect4Env(gym.Env):
     def reset(self):
         self.board = np.zeros(HEIGHT * WIDTH).reshape(HEIGHT, WIDTH)
         self.observation_space = spaces.Box(-1, 1, shape=(6,7))
-        #self.observation_space = spaces.Box(-1, 1, dtype=np.float32)
-        #self.state = {'board': self.board}
         self.state = self.board
         self.done = False
         self.current_player = Player.P1.value
@@ -155,50 +160,49 @@ class Connect4Env(gym.Env):
         done = False
         filled = False
         count = 1
+
+        # Check if board is filled
         if Player.Empty.value not in self.board:
-         #   print('filled')
             filled = True
-        #print("row {} col {} player {}".format(last_played, action, player_val))
+
+        # Check if last played action resulted in a upward diagonal win
         if (0 < last_played and 0 < action):
             if self.board[last_played - 1][action - 1] == player_val:
-                #print('checking d1.1')
                 done = self.check_d1(last_played, action, player_val)
         elif last_played < HEIGHT - 1 and action <  WIDTH - 1:
             if self.board[last_played + 1][action + 1] == player_val:
-                #print('checking d1.2')
                 done = self.check_d1(last_played, action, player_val)
 
+        # Check if last played action resulted in a downward diagonal win
         if (0 < last_played and action < WIDTH - 1):
             if self.board[last_played - 1][action + 1] == player_val:
-                #print('checking d2.1')
                 done = done or self.check_d2(last_played, action, player_val)
         elif (last_played < HEIGHT - 1 and 0 < action):
             if self.board[last_played + 1][action - 1] == player_val:
-                #print('checking d2.2')
                 done = done or self.check_d2(last_played, action, player_val)
 
+        # Check if last played action resulted in a horizontal win
         if 0 < action:
             if self.board[last_played][action - 1] == player_val:
-          #      print('checking h.1')
                 done = done or self.check_horizontal(last_played, player_val)
         elif (action < WIDTH - 1) or (0 < action):
             if self.board[last_played][action + 1] == player_val:
-           #     print('checking h.2')
                 done = done or self.check_horizontal(last_played, player_val)
 
+        # Check if last played action resulted in a vertical win
         if (last_played < HEIGHT - 1):
             if self.board[last_played + 1][action] == player_val:
-            #    print('checking v.2')
                 done = done or self.check_vertical(action, player_val)
 
+        # Tie condition gives 0 reward
         if filled and not done:
-            # TIE = 0 reward
             return True, 0
+
         if done:
             # Game won by player = 1 reward; won by opponent = -1
             return True, (75 * player_val)
         else:
-            # Game not done = 0 reward
+            # Game not done. Reward = 0
             return False, 0
 
     def check_d1(self, row, col, player_val, would_win = False):
@@ -219,7 +223,6 @@ class Connect4Env(gym.Env):
     def check_d2(self, row, col, player_val, would_win = False):
         start_r = row + min(HEIGHT - row - 1, col)
         start_c = col - min(HEIGHT - row - 1, col)
-        #print('row {} col {}, sr {} sc {}'.format(row, col, start_r, start_c))
         count = 0
         while start_r >= 0 and start_c < WIDTH:
             if self.board[start_r, start_c] == player_val or (would_win and row == start_r and col == start_c):
@@ -253,26 +256,5 @@ class Connect4Env(gym.Env):
         return False
     
     def update_legal_moves(self, col):
-        #for i in self.action_space[:]:
         if not np.any(self.board[:,col] == 0) and col not in self.illegal:
-            #print('removed col {}'.format(col))
-            #print('removing {}'.format(col))
-            #self.action_spacescol)
             self.illegal.append(col)
-                #break
-
-class Player(enum.Enum):
-    P1 = 1
-    P2 = -1
-    Empty = 0
-
-
-class Actions(enum.Enum):
-    Col1 = 0
-    Col2 = 1
-    Col3 = 2
-    Col4 = 3
-    Col5 = 4
-    Col6 = 5
-    Col7 = 6
-

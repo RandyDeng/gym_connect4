@@ -79,8 +79,6 @@ def main():
     #dqn.load_weights(filename.format('.weights32'))
     dqn.test(env, nb_episodes=100, visualize=True)
     env.close()
-    
-    # Save metrics to file
 
 if __name__ == "__main__":
     main()

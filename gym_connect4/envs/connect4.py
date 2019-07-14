@@ -70,9 +70,9 @@ class Connect4Env(gym.Env):
                     pass
                 else:
                     opp_action = -1
-                    if self.count % 100000 == 0 and self.count <= 500000:
+                    if self.count % 100000 == 0 and self.count <= 300000:
                         self.probs = self.remake_probs()
-                    elif 600000 < self.count <= 800000:
+                    elif 400000 < self.count <= 700000:
                         if 1 in self.probs:
                             opp_action = self.probs.index(True)
                             if self.get_good_col(self.probs.index(True)) == Player.P1.value:
@@ -86,7 +86,7 @@ class Connect4Env(gym.Env):
                             self.probs = [0, 0, 0, 0, 0, 0, 0]
                             idx = np.random.choice(self.action_spaces)
                             self.probs[idx] = 1
-                    elif 800000 < self.count <= 1000000:
+                    elif 700000 < self.count <= 1000000:
                         if self.last_ai_move in self.illegal:
                             while opp_action in self.illegal:
                                 opp_action = np.random.choice(self.action_spaces)
@@ -96,7 +96,7 @@ class Connect4Env(gym.Env):
                     else:
                         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
                     while opp_action in self.illegal:
-                        if 600000 < self.count <= 800000:
+                        if 400000 < self.count <= 700000:
                             opp_action = np.random.choice(self.action_spaces)
                         else:
                             opp_action = np.random.choice(self.action_spaces, p=self.probs)
@@ -123,7 +123,7 @@ class Connect4Env(gym.Env):
                 self.update_legal_moves(action)
                 self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
                 self.state = self.board
-                reward = reward + 1
+                #reward = reward + 1
             else:
                 # Punish illegal moves heavily
                 reward = -100
@@ -143,7 +143,7 @@ class Connect4Env(gym.Env):
         self.action_spaces = [0, 1, 2, 3, 4, 5, 6]
         self.first_player = np.random.choice([True,False])
         self.illegal = [None, -1]
-        if 600000 < self.count <= 800000:
+        if 400000 < self.count <= 700000:
             idx = np.random.choice(self.action_spaces)
             self.probs = [0, 0, 0, 0, 0, 0, 0]
             self.probs[idx] = 1

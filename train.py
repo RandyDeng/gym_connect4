@@ -59,22 +59,23 @@ def main():
     # Build Neural Network Architecture for Reinforcement Learning
     model = build_model()
     memory = SequentialMemory(limit=1000000, window_length=1)
-    policy = EpsGreedyQPolicy()
+    policy = MaxBoltzmannQPolicy()
     dqn = DQNAgent(model=model,
                    nb_actions=7,
                    memory=memory,
                    nb_steps_warmup=10,
                    target_model_update=1e-2,
                    policy=policy)
-    metrics = Metrics(dqn)
+                   #enable_double_dqn=True)
+    #metrics = Metrics(dqn)
 
     # Train the Neural Network
-    filename = 'dqn_EpsGreedy{}'
+    filename = 'dqn_MaxBoltzmann{}'
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
     dqn.load_weights(filename.format('.weights32'))
-    dqn.fit(env, nb_steps=1000000, visualize=False, verbose=1, callbacks=[metrics])
-    dqn.save_weights(filename.format('.weights32'), overwrite=True)
-    pickle.dump(metrics.metrics, open(filename.format('.metrics'), 'wb'))
+    dqn.fit(env, nb_steps=1000000, visualize=False, verbose=1)#, callbacks=[metrics])
+    #dqn.save_weights(filename.format('.weights32'), overwrite=True)
+    #pickle.dump(metrics.metrics, open(filename.format('.metrics'), 'wb'))
     #dqn.load_weights(filename.format('.weights32'))
     dqn.test(env, nb_episodes=100, visualize=True)
     env.close()

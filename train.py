@@ -72,7 +72,7 @@ def main():
     filename = 'dqn_EpsGreedy{}'
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
     dqn.load_weights(filename.format('.weights32'))
-    dqn.fit(env, nb_steps=1000000, visualize=False, verbose=2, callbacks=[metrics])
+    dqn.fit(env, nb_steps=1000000, visualize=False, verbose=1, callbacks=[metrics])
     dqn.save_weights(filename.format('.weights32'), overwrite=True)
     pickle.dump(metrics.metrics, open(filename.format('.metrics'), 'wb'))
     #dqn.load_weights(filename.format('.weights32'))

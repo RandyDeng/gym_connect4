@@ -121,7 +121,7 @@ class Connect4Env(gym.Env):
                 self.update_legal_moves(action)
                 self.done, reward = self.check_win_condition(last_played, action, Player.P1.value)
                 self.state = self.board
-                reward = reward + 1
+                #reward = reward + 1
             else:
                 # Punish illegal moves heavily
                 reward = -100

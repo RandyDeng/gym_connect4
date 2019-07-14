@@ -2,6 +2,8 @@ import gym
 import enum
 import numpy as np
 
+from pprint import pprint
+
 from gym import spaces
 
 HEIGHT = 6
@@ -148,8 +150,20 @@ class Connect4Env(gym.Env):
         return np.array(self.state)
 
     def render(self, mode='human', close=False):
-        print(self.board)
-        print("")
+        board = []
+        for i in range(HEIGHT):
+            row = []
+            for j in range(WIDTH):
+                if self.board[i, j] == 0:
+                    row.append(u"⚫"),
+                elif self.board[i, j] == 1:
+                    row.append(u"🔵")
+                elif self.board[i, j] == -1:
+                    row.append(u"🔴")
+            board.append(row)
+        print('\n')
+        pprint(board)
+        print('\n')
 
     def remake_probs(self):
         return np.random.dirichlet(np.ones(7))

@@ -51,6 +51,8 @@ class Connect4Env(gym.Env):
         # Rewards: -1 for losing, 0 for tie, 1 for winning
         reward = 0
         # Keep track of moves for updating the opponent action policy
+        if self.count > 1000000:
+            self.count = 0
         self.count = self.count + 1
         
         # Opponent move. Can be random, bot, or manual (human controlled)
@@ -69,11 +71,16 @@ class Connect4Env(gym.Env):
                     if self.count % 100000 == 0 and self.count <= 500000:
                         self.probs = self.remake_probs()
                     elif 600000 < self.count <= 800000:
-                        if 1 not in self.probs:
+                        if 1 in self.probs:
+                            opp_action = self.probs.index(True)
+                            if self.get_good_col(self.probs.index(True)) == Player.P1.value:
+                                skip = True
+                        if 1 not in self.probs or skip:
                             self.probs = [0, 0, 0, 0, 0, 0, 0]
                             idx = np.random.choice(self.action_spaces)
                             self.probs[idx] = 1
-                        while self.probs.index(True) in self.illegal:
+                            opp_action = idx
+                        while self.probs.index(True) in self.illegal and not skip:
                             self.probs = [0, 0, 0, 0, 0, 0, 0]
                             idx = np.random.choice(self.action_spaces)
                             self.probs[idx] = 1
@@ -87,7 +94,10 @@ class Connect4Env(gym.Env):
                     else:
                         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
                     while opp_action in self.illegal:
-                        opp_action = np.random.choice(self.action_spaces, p=self.probs)
+                        if 600000 < self.count <= 800000:
+                            opp_action = np.random.choice(self.action_spaces)
+                        else:
+                            opp_action = np.random.choice(self.action_spaces, p=self.probs)
             elif self.opponent == 'self':
                 raise NotImplementedError('Self is not implemented yet')
             elif self.opponent == 'human':
@@ -143,6 +153,13 @@ class Connect4Env(gym.Env):
 
     def remake_probs(self):
         return np.random.dirichlet(np.ones(7))
+
+    def get_good_col(self, action):
+        chosen_col = self.board[:, action]
+        for i in range(len(chosen_col)):
+            if int(chosen_col[6 - i - 1]) == 0:
+                if (6 - i) != 6:
+                    return chosen_col[6 - i]
 
     def get_row_number(self, action):
         chosen_col = self.board[:, action]

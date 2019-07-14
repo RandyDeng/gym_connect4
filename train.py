@@ -71,8 +71,8 @@ def main():
     # Train the Neural Network
     filename = 'dqn_MaxBoltzmann{}'
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
-    # dqn.load_weights(filename.format('.weights32'))
-    dqn.fit(env, nb_steps=2000000, visualize=False, verbose=2, callbacks=[metrics])
+    #dqn.load_weights(filename.format('.weights32'))
+    dqn.fit(env, nb_steps=1000000, visualize=False, verbose=1, callbacks=[metrics])
     dqn.save_weights(filename.format('.weights32'), overwrite=True)
     dqn.test(env, nb_episodes=100, visualize=False)
     env.close()

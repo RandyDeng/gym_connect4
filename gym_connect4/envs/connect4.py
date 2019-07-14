@@ -58,7 +58,7 @@ class Connect4Env(gym.Env):
             if self.opponent == 'random':
                 skip, opp_action = self.check_would_win(Player.P2.value)
                 if skip:
-                    self.perform_move(opp_action, -1)
+                    self.perform_move(opp_action, Player.P2.value)
                     return np.array(self.state), -75, True, {}
                 else:
                     skip, opp_action = self.check_would_win(Player.P1.value)
@@ -167,34 +167,10 @@ class Connect4Env(gym.Env):
         if Player.Empty.value not in self.board:
             filled = True
 
-        # Check if last played action resulted in a upward diagonal win
-        if (0 < last_played and 0 < action):
-            if self.board[last_played - 1][action - 1] == player_val:
-                done = self.check_d1(last_played, action, player_val)
-        elif last_played < HEIGHT - 1 and action <  WIDTH - 1:
-            if self.board[last_played + 1][action + 1] == player_val:
-                done = self.check_d1(last_played, action, player_val)
-
-        # Check if last played action resulted in a downward diagonal win
-        if (0 < last_played and action < WIDTH - 1):
-            if self.board[last_played - 1][action + 1] == player_val:
-                done = done or self.check_d2(last_played, action, player_val)
-        elif (last_played < HEIGHT - 1 and 0 < action):
-            if self.board[last_played + 1][action - 1] == player_val:
-                done = done or self.check_d2(last_played, action, player_val)
-
-        # Check if last played action resulted in a horizontal win
-        if 0 < action:
-            if self.board[last_played][action - 1] == player_val:
-                done = done or self.check_horizontal(last_played, player_val)
-        elif (action < WIDTH - 1) or (0 < action):
-            if self.board[last_played][action + 1] == player_val:
-                done = done or self.check_horizontal(last_played, player_val)
-
-        # Check if last played action resulted in a vertical win
-        if (last_played < HEIGHT - 1):
-            if self.board[last_played + 1][action] == player_val:
-                done = done or self.check_vertical(action, player_val)
+        done = self.check_d1(last_played, action, player_val)
+        done = done or self.check_d2(last_played, action, player_val)
+        done = done or self.check_horizontal(last_played, player_val)
+        done = done or self.check_vertical(action, player_val)
 
         # Tie condition gives 0 reward
         if filled and not done:
@@ -239,13 +215,14 @@ class Connect4Env(gym.Env):
     
     def check_horizontal(self, row, player_val, would_win = False, col = 0):
         r = self.board[row,:]
-        for i in range(4):
-            if would_win:
-                return (((r[i] == player_val) + (r[i + 1] == player_val) +
-                    (r[i + 2] == player_val) +  (r[i + 3] == player_val)) == 3) and\
-                    ((i == col) or (i + 1 == col) or (i + 2 == col) or (i + 3 == col))
-            if r[i] == r[i + 1] == r[i + 2] == r[i + 3] == player_val:
-                return True
+        count = 0
+        for i in range(7):
+            if r[i] == player_val or (would_win and i == col):
+                count = count + 1
+                if count == 4:
+                    return True
+            else:
+                count = 0
         return False
 
     def check_vertical(self, column, player_val, would_win = False, row = 0):

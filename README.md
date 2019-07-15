@@ -44,7 +44,7 @@ Double DQNs attempt to solve a problem with overestimation in DQNs. Learning can
 
 For a full explanation of these algorithms, please read either the [wikipedia article](https://en.wikipedia.org/wiki/Q-learning#Variants) or the original journal articles.
 
-- [DQN Journal Article 1](https://arxiv.org/abs/1312.5602) and [DQN Journal Article 2](https://www.nature.com/articles/nature14236) [4][5]
+- [DQN Journal Article 1](https://arxiv.org/abs/1312.5602) and [DQN Journal Article 2](https://www.nature.com/articles/nature14236) [4, 5]
 - [Double DQN Journal Article](https://arxiv.org/abs/1509.06461) [6]
 
 Our work primarily focused on 2 policies for each of the algorithms:

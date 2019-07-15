@@ -44,13 +44,13 @@ Double DQNs attempt to solve a problem with overestimation in DQNs. Learning can
 
 For a full explanation of these algorithms, please read either the [wikipedia article](https://en.wikipedia.org/wiki/Q-learning#Variants) or the original journal articles.
 
-- [DQN Journal Article 1](https://arxiv.org/abs/1312.5602) and [DQN Journal Article 2](https://www.nature.com/articles/nature14236)
-- [Double DQN Journal Article](https://arxiv.org/abs/1509.06461)
+- [DQN Journal Article 1](https://arxiv.org/abs/1312.5602) and [DQN Journal Article 2](https://www.nature.com/articles/nature14236) [4][5]
+- [Double DQN Journal Article](https://arxiv.org/abs/1509.06461) [6]
 
 Our work primarily focused on 2 policies for each of the algorithms:
 
 - [Epsilon Greedy](https://jamesmccaffrey.wordpress.com/2017/11/30/the-epsilon-greedy-algorithm/)
-- [Max Boltzmann](https://papers.nips.cc/paper/7208-boltzmann-exploration-done-right.pdf)
+- [Max Boltzmann](https://papers.nips.cc/paper/7208-boltzmann-exploration-done-right.pdf) [7]
 
 Epsilon Greedy and Max Boltzmann are both algorithms that determine how to pick the next action. A brief summary of each algorithm is provided below.
 
@@ -62,7 +62,7 @@ In both policies, the weights will be continously updated. Full details are prov
 
 ### Training and Model Architecture
 Since we are using DQN, it is necessary to create a neural network model. The neural network model consists of 1 3x3 convolutional layer, 5 Dense ReLu layers of 32 nodes each, and 1 Dense Linear layer of 7 nodes (representing the 7 decision in Connect 4). A diagram is shown below:
- 
+
 ![neural network](/assets/nn.png)
 
 ### Generating our Dataset
@@ -99,3 +99,11 @@ One of the biggest issues of this work is our lack of self play. Since we are tr
 [2] Mnih, V., Kavukcuoglu, K., Silver, D., Graves, A., Antonoglou, I., Wierstra, D., & Riedmiller, M. (2013). Playing atari with deep reinforcement learning. arXiv preprint arXiv:1312.5602.
 
 [3] Crites, R. H., & Barto, A. G. (1996). Improving elevator performance using reinforcement learning. In Advances in neural information processing systems (pp. 1017-1023).
+
+[4] Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A. A., Veness, J., Bellemare, M. G., ... & Petersen, S. (2015). Human-level control through deep reinforcement learning. Nature, 518(7540), 529.
+
+[5] Mnih, V., Kavukcuoglu, K., Silver, D., Graves, A., Antonoglou, I., Wierstra, D., & Riedmiller, M. (2013). Playing atari with deep reinforcement learning. arXiv preprint arXiv:1312.5602.
+
+[6] Van Hasselt, H., Guez, A., & Silver, D. (2016, March). Deep reinforcement learning with double q-learning. In Thirtieth AAAI conference on artificial intelligence.
+
+[7] Cesa-Bianchi, N., Gentile, C., Lugosi, G., & Neu, G. (2017). Boltzmann exploration done right. In Advances in Neural Information Processing Systems (pp. 6284-6293).

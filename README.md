@@ -5,7 +5,7 @@ For more background, check out the [original proposal](/assets/CX4240_Project_Pr
 
 You can also view the final presentation slides below:
 
-<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSzX-DgSVi6cHHI8M2a9SaE_yVw00ND7hmEx8-HYq2_635FYwZVnPni9tKqx7t-idZvkeYSiaR0U_mU/embed?start=true&loop=true&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSzX-DgSVi6cHHI8M2a9SaE_yVw00ND7hmEx8-HYq2_635FYwZVnPni9tKqx7t-idZvkeYSiaR0U_mU/embed?start=true&loop=true&delayms=3000" frameborder="0" width="480" height="299" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 
 ## Introduction
 The goal of this project is to develop a bot using Reinforcement Learning that can play Connect 4 against humans.

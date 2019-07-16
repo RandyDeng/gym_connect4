@@ -95,6 +95,8 @@ class Connect4Env(gym.Env):
                             self.probs[self.last_ai_move] = 1
                     else:
                         self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
+                    if np.logical_or.reduce(np.isnan(self.probs)):
+                        self.probs = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
                     while opp_action in self.illegal:
                         if 400000 < self.count <= 700000:
                             opp_action = np.random.choice(self.action_spaces)
@@ -150,6 +152,9 @@ class Connect4Env(gym.Env):
         return np.array(self.state)
 
     def render(self, mode='human', close=False):
+        print(self.board)
+        print("")
+
         board = []
         for i in range(HEIGHT):
             row = []
@@ -161,9 +166,11 @@ class Connect4Env(gym.Env):
                 elif self.board[i, j] == -1:
                     row.append(u"🔴")
             board.append(row)
-        print('\n')
-        pprint(board)
-        print('\n')
+        myfile = open('/mnt/f/game_output.txt', 'a+')
+        myfile.write('\n')
+        pprint(board, myfile)
+        myfile.write('\n')
+        myfile.close()
 
     def remake_probs(self):
         return np.random.dirichlet(np.ones(7))
